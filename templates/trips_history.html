@@ -57,6 +57,9 @@
             <th>Город</th>
             <th>Дата отправления <span class="calendar-icon"></span></th>
             <th>Дата прибытия <span class="calendar-icon"></span></th>
+            <th>Продолжительность пребывания</th>
+            <th>Продолжительность полета</th>
+            <th>Ваш рейтинг</th>
         </tr>
         {% for trip in trips %}
         <tr>
@@ -64,6 +67,9 @@
             <td>{{ trip.city }}</td>
             <td>{{ trip.departure_date }}</td>
             <td>{{ trip.arrival_date }}</td>
+            <td>{{ trip.stay_duration }}</td>
+            <td>{{ trip.flight_duration }}</td>
+            <td>{{ trip.country }}</td>
         </tr>
         {% endfor %}
     </table>
