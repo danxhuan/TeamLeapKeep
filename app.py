@@ -1,7 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
+from models import db, User, Trip
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
@@ -41,6 +42,38 @@ def login():
         else:
             return 'Invalid email or password'
     return render_template('login.html')
+
+
+@app.route('/create_trip', methods=['GET', 'POST'])
+def create_trip():
+    if request.method == 'POST':
+        country = request.form['country']
+        city = request.form['city']
+        departure_date = datetime.strptime(
+            request.form['departure_date'], '%Y-%m-%d')
+        arrival_date = datetime.strptime(
+            request.form['arrival_date'], '%Y-%m-%d')
+
+        # Получаем текущего пользователя
+        user = User.query.filter_by(username=request.form['username']).first()
+
+        if user:
+            new_trip = Trip(country=country, city=city, departure_date=departure_date,
+                            arrival_date=arrival_date, user_id=user.id)
+            db.session.add(new_trip)
+            db.session.commit()
+
+            return redirect(url_for('index'))
+        else:
+            return 'User not found'
+
+    return render_template('create_trip.html')
+
+
+@app.route('/trips_history')
+def trips_history():
+    trips = Trip.query.all()
+    return render_template('trips_history.html', trips=trips)
 
 
 if __name__ == '__main__':
