@@ -53,16 +53,12 @@ def create_trip():
             request.form['departure_date'], '%Y-%m-%d')
         arrival_date = datetime.strptime(
             request.form['arrival_date'], '%Y-%m-%d')
-
-        # Получаем текущего пользователя
         user = User.query.filter_by(username=request.form['username']).first()
-
         if user:
             new_trip = Trip(country=country, city=city, departure_date=departure_date,
                             arrival_date=arrival_date, user_id=user.id)
             db.session.add(new_trip)
             db.session.commit()
-
             return redirect(url_for('index'))
         else:
             return 'User not found'
