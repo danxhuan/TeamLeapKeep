@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from models import db, User, Trip
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -6,47 +6,45 @@ from datetime import datetime
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.secret_key = 'danxhuan'
 db = SQLAlchemy(app)
 
 
-@app.route('/rate_place', methods=['GET', 'POST'])
-def rate_place():
-    completed_trips = Trip.query.all()
-    if request.method == 'POST':
-        trip_id = request.form['trip_id']
-        rating_value = request.form['rating']
-        user = User.query.get(1)
-        new_rating = Rating(
-            trip_id=trip_id, user_id=user.id, rating=rating_value)
-        db.session.add(new_rating)
-        db.session.commit()
-        return redirect(url_for('trips_history', trip_id=trip_id))
-    return render_template('rate_place.html', trips=completed_trips)
+def connect_db():
+    return sqlite3.connect('database.db')
 
 
-@ app.route('/')
+def login_required(f):
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+@app.route('/')
 def index():
     return render_template('index.html')
 
 
-@ app.route('/register', methods=['GET', 'POST'])
+@app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         username = request.form['username']
         email = request.form['email']
         password = request.form['password']
+        if User.query.filter_by(email=email).first():
+            return 'Пользователь с этим email уже зарегистрирован'
         hashed_password = generate_password_hash(password)
         new_user = User(username=username, email=email,
                         password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
-        print('Регистрация прошла успешно')
         return redirect(url_for('index'))
-    else:
-        return render_template('register.html')
+    return render_template('register.html')
 
 
-@ app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         email = request.form['email']
@@ -59,25 +57,31 @@ def login():
     return render_template('login.html')
 
 
-@ app.route('/create_trip', methods=['GET', 'POST'])
+@app.route('/create_trip', methods=['GET', 'POST'])
+@login_required
 def create_trip():
     if request.method == 'POST':
-        country = request.form['country']
-        city = request.form['city']
+        start_country = request.form['start_country']
+        finish_country = request.form['finish_country']
+        start_city = request.form['start_city']
+        finish_city = request.form['finish_city']
         departure_date = datetime.strptime(
             request.form['departure_date'], '%Y-%m-%d')
         arrival_date = datetime.strptime(
             request.form['arrival_date'], '%Y-%m-%d')
-        user = User.query.filter_by(username=request.form['username']).first()
-        if user:
-            new_trip = Trip(country=country, city=city, departure_date=departure_date,
-                            arrival_date=arrival_date, user_id=user.id)
-            db.session.add(new_trip)
-            db.session.commit()
-            return redirect(url_for('index'))
-        else:
-            return 'User not found'
-    return render_template('create_trip.html')
+        stay_time = request.form['stay_time']
+        flight_time = request.form['flight_time']
+        rating = request.form['rating']
+        new_trip = Trip(start_country=start_country, finish_country=finish_country,
+                        start_city=start_city, finish_city=finish_city,
+                        departure_date=departure_date, arrival_date=arrival_date,
+                        stay_time=stay_time, flight_time=flight_time,
+                        rating=rating, user_id=session['user_id'])
+        db.session.add(new_trip)
+        db.session.commit()
+        return redirect(url_for('index'))
+    else:
+        return render_template('create_trip.html')
 
 
 @ app.route('/trips_history')
