@@ -3,79 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Создание Поездки</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 500px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            color: #007bff;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        form {
-            text-align: center;
-        }
-        label {
-            display: block;
-            color: #007bff;
-            margin-bottom: 5px;
-        }
-        input[type="text"],
-        input[type="date"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-        }
-        button {
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-    </style>
+    <title>Создать поездку</title>
 </head>
 <body>
-    <div class="container">
-        <h1>Создание Поездки</h1>
-        <form method="POST">
-            <label for="username">Имя пользователя:</label>
-            <input type="text" id="username" name="username" required><br><br>
-            
-            <label for="country">Страна:</label>
-            <input type="text" id="country" name="country" required><br><br>
-            
-            <label for="city">Город:</label>
-            <input type="text" id="city" name="city" required><br><br>
-            
-            <label for="departure_date">Дата отправления:</label>
-            <input type="date" id="departure_date" name="departure_date" required><br><br>
-            
-            <label for="arrival_date">Дата прибытия:</label>
-            <input type="date" id="arrival_date" name="arrival_date" required><br><br>
-            
-            <button type="submit">Создать Поездку</button>
-        </form>
-    </div>
+    <h2>Создать поездку</h2>
+    <form action="/create_trip" method="post">
+        <label for="start_country">Страна отправления:</label><br>
+        <input type="text" id="start_country" name="start_country" required><br>
+        <label for="finish_country">Страна назначения:</label><br>
+        <input type="text" id="finish_country" name="finish_country" required><br>
+        <label for="start_city">Город отправления:</label><br>
+        <input type="text" id="start_city" name="start_city" required><br>
+        <label for="finish_city">Город назначения:</label><br>
+        <input type="text" id="finish_city" name="finish_city" required><br>
+        <label for="departure_date">Дата отправления:</label><br>
+        <input type="date" id="departure_date" name="departure_date" required><br>
+        <label for="arrival_date">Дата прибытия:</label><br>
+        <input type="date" id="arrival_date" name="arrival_date" required><br>
+        <label for="stay_time">Продолжительность пребывания:</label><br>
+        <input type="text" id="stay_time" name="stay_time" required><br>
+        <label for="flight_time">Время полета:</label><br>
+        <input type="text" id="flight_time" name="flight_time" required><br>
+        <label for="rating">Рейтинг:</label><br>
+        <input type="text" id="rating" name="rating" required><br><br>
+        <input type="submit" value="Создать поездку">
+    </form>
 </body>
 </html>
