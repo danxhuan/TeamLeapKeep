@@ -1,5 +1,11 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from enum import Enum
+
+
+class PaymentMethod(Enum):
+    CASH = 'Наличные'
+    CARD = 'Карта'
 
 db = SQLAlchemy()
 
@@ -9,6 +15,7 @@ class User(db.Model):
     username = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
+    payment_method = db.Column(db.Enum(PaymentMethod), nullable=True)
 
 
 class Trip(db.Model):
@@ -21,6 +28,12 @@ class Trip(db.Model):
     arrival_date = db.Column(db.DateTime, nullable=False)
     stay_time = db.Column(db.Integer)
     flight_time = db.Column(db.Integer)
-    rating = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('trips', lazy=True))
+
+
+class Rating(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    place_name = db.Column(db.String(100), nullable=False)
+    rating = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
