@@ -23,7 +23,7 @@ def index():
 def register():
     if request.method == 'POST':
         username = request.form['username']
-        email = request.form['email']
+        email = request.form['email'].lower()
         password = request.form['password']
         if User.query.filter_by(email=email).first():
             return 'Пользователь с этим email уже зарегистрирован'
@@ -39,7 +39,7 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form['email']
+        email = request.form['email'].lower()
         password = request.form['password']
         user = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password, password):
@@ -116,16 +116,29 @@ def rate_place():
     if 'user_id' not in session or session['user_id'] is None:
         return redirect(url_for('login'))
     if request.method == 'POST':
-        place_name = request.form['place_name']
-        rating = request.form['rating']
-
-        new_rating = Rating(place_name=place_name,
-                            rating=rating, user_id=session['user_id'])
-        db.session.add(new_rating)
+        place_name = request.form['place_name'].replace(' ', '')
+        user_rating = request.form['rating']
+        user_id = session['user_id']
+        existing_rating = Rating.query.filter_by(
+            place_name=place_name, user_id=user_id).first()
+        if existing_rating is not None:
+            existing_rating.rating = round((
+                (int(user_rating) + int(existing_rating.rating)) / 2), 2)
+        else:
+            new_rating = Rating(place_name=place_name,
+                                rating=user_rating, user_id=user_id)
+            db.session.add(new_rating)
         db.session.commit()
         return redirect(url_for('index'))
-    else:
-        return render_template('rate_place.html')
+    return render_template('rate_place.html')
+
+
+@app.route('/places', methods=['GET', 'POST'])
+def places():
+    if 'user_id' not in session or session['user_id'] is None:
+        return redirect(url_for('login'))
+    places = Rating.query.all()
+    return render_template('places.html', places=places)
 
 
 if __name__ == '__main__':
