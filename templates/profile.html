@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет</title>
+</head>
+<body>
+    <h2>Личный кабинет</h2>
+    <form action="/profile" method="post">
+        <label for="username">Имя пользователя:</label><br>
+        <input type="text" id="username" name="username" value="{{ user.username }}" required><br>
+        <label for="payment_method">Способ оплаты:</label><br>
+        <select id="payment_method" name="payment_method" required>
+            <option value="CASH" {% if user.payment_method == 'Наличные' %} selected {% endif %}>Наличные</option>
+            <option value="CARD" {% if user.payment_method == 'Карта' %} selected {% endif %}>Карта</option>
+        </select><br>
+        <label for="password">Новый пароль:</label><br>
+        <input type="password" id="password" name="password"><br><br>
+        <input type="submit" value="Сохранить изменения">
+    </form>
+    <br>
+    <a href="/logout">Выйти</a>
+</body>
+</html>
