@@ -3,73 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>История поездок</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #ffffff;
-            margin: 0;
-            padding: 0;
-        }
-        h1 {
-            color: #007bff;
-            text-align: center;
-            margin-top: 50px;
-        }
-        table {
-            width: 80%;
-            margin: 30px auto;
-            border-collapse: collapse;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-        }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 10px;
-            text-align: left;
-        }
-        th {
-            background-color: #007bff;
-            color: #fff;
-        }
-        tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-        tr:hover {
-            background-color: #ddd;
-        }
-        .calendar-icon {
-            width: 20px;
-            height: 20px;
-            background: url('calendar-icon.png') no-repeat center center;
-            background-size: cover;
-            display: inline-block;
-            vertical-align: middle;
-        }
-    </style>
+    <title>Создать поездку</title>
 </head>
 <body>
     <h1>История поездок</h1>
     <table>
         <tr>
-            <th>Страна</th>
-            <th>Город</th>
+            <th>Страна отправления</th>
+            <th>Страна назначения</th>
+            <th>Город отправления</th>
+            <th>Город назначения</th>
             <th>Дата отправления <span class="calendar-icon"></span></th>
             <th>Дата прибытия <span class="calendar-icon"></span></th>
             <th>Продолжительность пребывания</th>
             <th>Продолжительность полета</th>
-            <th>Ваш рейтинг</th>
         </tr>
         {% for trip in trips %}
         <tr>
-            <td>{{ trip.country }}</td>
-            <td>{{ trip.city }}</td>
+            <td>{{ trip.start_country }}</td>
+            <td>{{ trip.finish_country }}</td>
+            <td>{{ trip.start_city }}</td>
+            <td>{{ trip.finish_city }}</td>
             <td>{{ trip.departure_date }}</td>
             <td>{{ trip.arrival_date }}</td>
-            <td>{{ trip.stay_duration }}</td>
-            <td>{{ trip.flight_duration }}</td>
-            <td>{{ trip.country }}</td>
+            <td>{{ trip.stay_time }}</td>
+            <td>{{ trip.flight_time }}</td>
         </tr>
         {% endfor %}
     </table>

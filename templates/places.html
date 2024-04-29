@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Посмотреть оценки</title>
+</head> 
+<body>
+    <h1>Оценки мест</h1>
+    <table border="1"> <!-- Добавлен border для визуального разделения ячеек таблицы -->
+        <thead> <!-- Заголовок таблицы -->
+            <tr>
+                <th>Название места</th>
+                <th>Рейтинг</th>
+            </tr>
+        </thead>
+        <tbody> <!-- Тело таблицы -->
+            {% for place in places %}
+            <tr>
+                <td>{{ place.place_name }}</td>
+                <td>{{ place.rating }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
+
+

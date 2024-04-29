@@ -4,80 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Оценить место</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 20px;
-        }
-        h1, h2 {
-            color: #333;
-            text-align: center;
-        }
-        form {
-            max-width: 400px;
-            margin: 0 auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: #333;
-        }
-        select, input[type="number"], button {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-        button {
-            background-color: #007bff;
-            color: #fff;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        li {
-            background-color: #fff;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-        }
-    </style>
 </head>
 <body>
     <h1>Оценить место</h1>
-    <form action="{{ url_for('rate_place') }}" method="POST">
-        <label for="trip">Выберите поездку:</label>
-        <select id="trip" name="trip_id" required>
-            {% for trip in trips %}
-                <option value="{{ trip.id }}">{{ trip.country }} - {{ trip.city }}</option>
-            {% endfor %}
-        </select>
-        <label for="rating">Оцените это место (от 1 до 5):</label>
-        <input type="number" id="rating" name="rating" min="1" max="5" required>
-        <button type="submit">Отправить</button>
+    <form action="/rate_place" method="post">
+        <label for="place_name">Название места:</label>
+        <input type="text" id="place_name" name="place_name"><br><br>
+        <label for="rating">Рейтинг:</label>
+        <input type="number" id="rating" name="rating" min="1" max="10"><br><br>
+        <input type="submit" value="Оценить">
     </form>
-    <h2>Совершенные поездки</h2>
-    <ul>
-        {% for trip in completed_trips %}
-            <li>{{ trip.country }} - {{ trip.city }}</li>
-        {% endfor %}
-    </ul>
 </body>
 </html>
