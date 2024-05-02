@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from models import db, User, Trip, Rating
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+from check import username_check, email_check, country_check, password_check
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
@@ -21,33 +22,47 @@ def index():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    error = None
     if request.method == 'POST':
         username = request.form['username']
         email = request.form['email'].lower()
         password = request.form['password']
         if User.query.filter_by(email=email).first():
-            return 'Пользователь с этим email уже зарегистрирован'
+            error = 'Пользователь с этим email уже зарегистрирован'
+            return render_template('register.html', error=error)
+        if not username_check(username):
+            error = 'Имя пользователя не соответствует требованиям.'
+            return render_template('register.html', error=error)
+        if not email_check(email):
+            error = 'Адрес почты не соответствует требованиям.'
+            return render_template('register.html', error=error)
+        if not password_check(password):
+            error = 'Пароль не соответствует требованиям.'
+            return render_template('register.html', error=error)
         hashed_password = generate_password_hash(password)
         new_user = User(username=username, email=email,
                         password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
         return redirect(url_for('index'))
-    return render_template('register.html')
+    return render_template('register.html', error=error)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    error = None
     if request.method == 'POST':
         email = request.form['email'].lower()
         password = request.form['password']
+        if not email_check(email):
+            error = 'Адрес почты не соответствует требованиям.'
         user = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password, password):
             session['user_id'] = user.id
             return redirect(url_for('index'))
         else:
-            return 'Неправильный email или пароль'
-    return render_template('login.html')
+            error = 'Неправильный email или пароль'
+    return render_template('login.html', error=error)
 
 
 @app.route('/create_trip', methods=['GET', 'POST'])
@@ -79,19 +94,22 @@ def create_trip():
 
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
+    error = None
     if 'user_id' not in session or session['user_id'] is None:
         return redirect(url_for('login'))
     if request.method == 'POST':
         new_username = request.form['username']
         new_payment_method = request.form['payment_method']
         new_password = request.form['password']
+        if not username_check(new_username):
+            error = 'Имя пользователя не соответствует требованиям.'
         user = User.query.filter_by(id=session['user_id']).first()
         user.username = new_username
         user.payment_method = new_payment_method
         if new_password:
             user.password = generate_password_hash(new_password)
         db.session.commit()
-        return redirect(url_for('profile'))
+        return redirect(url_for('profile'), error=error)
     else:
         user = User.query.filter_by(id=session['user_id']).first()
         return render_template('profile.html', user=user)
@@ -113,12 +131,15 @@ def trips_history():
 
 @app.route('/rate_place', methods=['GET', 'POST'])
 def rate_place():
+    error = None
     if 'user_id' not in session or session['user_id'] is None:
         return redirect(url_for('login'))
     if request.method == 'POST':
-        place_name = request.form['place_name'].replace(' ', '')
+        place_name = request.form['place_name'].rstrip(' ')
         user_rating = request.form['rating']
         user_id = session['user_id']
+        if not country_check(place_name):
+            error = 'Название пункта не соответствует требованиям.'
         existing_rating = Rating.query.filter_by(
             place_name=place_name, user_id=user_id).first()
         if existing_rating is not None:
@@ -130,7 +151,7 @@ def rate_place():
             db.session.add(new_rating)
         db.session.commit()
         return redirect(url_for('index'))
-    return render_template('rate_place.html')
+    return render_template('rate_place.html', error=error)
 
 
 @app.route('/places', methods=['GET', 'POST'])
