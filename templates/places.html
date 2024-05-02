@@ -4,26 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Посмотреть оценки</title>
-</head> 
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
 <body>
-    <h1>Оценки мест</h1>
-    <table border="1"> <!-- Добавлен border для визуального разделения ячеек таблицы -->
-        <thead> <!-- Заголовок таблицы -->
-            <tr>
-                <th>Название места</th>
-                <th>Рейтинг</th>
-            </tr>
-        </thead>
-        <tbody> <!-- Тело таблицы -->
-            {% for place in places %}
-            <tr>
-                <td>{{ place.place_name }}</td>
-                <td>{{ place.rating }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <header>
+        {% include 'header.html' %}
+    </header>
+    <main>
+        <div class="container">
+            <h1 class="h1">Оценки мест</h1>
+            <table class="rating-table">
+                <thead>
+                    <tr>
+                        <th>Название места</th>
+                        <th>Рейтинг</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for place in places %}
+                    <tr>
+                        <td>{{ place.place_name }}</td>
+                        <td>{{ place.rating }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        </main>
+    <footer>
+        {% include 'footer.html' %}
+    </footer>
 </body>
 </html>
-
-
