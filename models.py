@@ -1,13 +1,13 @@
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, date
 from enum import Enum
+
+db = SQLAlchemy()
 
 
 class PaymentMethod(Enum):
     CASH = 'Наличные'
     CARD = 'Карта'
-
-db = SQLAlchemy()
 
 
 class User(db.Model):
@@ -24,12 +24,34 @@ class Trip(db.Model):
     finish_country = db.Column(db.String(100), nullable=False)
     start_city = db.Column(db.String(100), nullable=False)
     finish_city = db.Column(db.String(100), nullable=False)
-    departure_date = db.Column(db.DateTime, nullable=False)
-    arrival_date = db.Column(db.DateTime, nullable=False)
-    stay_time = db.Column(db.Integer)
-    flight_time = db.Column(db.Integer)
+    _departure_date = db.Column('departure_date', db.DateTime, nullable=False)
+    _arrival_date = db.Column('arrival_date', db.DateTime, nullable=False)
+    stay_time = db.Column(db.Integer, nullable=True)
+    flight_time = db.Column(db.Integer, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('trips', lazy=True))
+
+    @property
+    def departure_date(self):
+        return self._departure_date.date() if self._departure_date else None
+
+    @departure_date.setter
+    def departure_date(self, value):
+        if isinstance(value, date):
+            self._departure_date = datetime.combine(value, datetime.min.time())
+        else:
+            raise ValueError('departure_date must be a datetime.date instance')
+
+    @property
+    def arrival_date(self):
+        return self._arrival_date.date() if self._arrival_date else None
+
+    @arrival_date.setter
+    def arrival_date(self, value):
+        if isinstance(value, date):
+            self._arrival_date = datetime.combine(value, datetime.min.time())
+        else:
+            raise ValueError('arrival_date must be a datetime.date instance')
 
 
 class Rating(db.Model):

@@ -119,7 +119,3 @@ python app.py
 ## Ссылки
 
 Notion - [LeapKeep](https://www.notion.so/29d5a013d243490a9ecfb3d1d6d5f7cf?v=462428fbd16545a6bb3ab7f5e9baacf1)
-=======
-# TeamLeapKeep
-wiwiwi hello
-not wiwiwi hello!
