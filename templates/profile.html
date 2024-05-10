@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+    <header>
+        {% include 'header.html' %}
+    </header>
+    <div class="container_auth">
+        <main>
+            <h2 class="h1">Личный кабинет</h2>
+            <form action="/profile" method="post" class="form">
+                <div class="form-group">
+                    <div class="form-floating">
+                    <input type="text" id="username" name="username" value="{{ user.username }}" required class="form-control" placeholder="username">
+                    <label for="username">Изменить имя пользователя:</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="password" id="password" name="password" value="{{ user.password }}" required class="form-control" placeholder="password">
+                        <label for="password">Изменить пароль:</label>
+                        </div>
+                </div>
+                <div class="form-group">
+                    <label for="payment_method">Выберите способ оплаты:</label>
+                    <select id="payment_method" name="payment_method" required class="form-control" placeholder="username">                   
+                        <option value="CASH" {% if user.payment_method == 'Наличные' %} selected {% endif %}>Наличные</option>
+                        <option value="CARD" {% if user.payment_method == 'Карта' %} selected {% endif %}>Карта</option>
+                    </select>
+
+                </div>
+                <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+            </form>
+            <a href="/logout" class="logout-link">Выйти</a>
+        </main>
+    </div>
+    <footer>
+        {% include 'footer.html' %}
+    </footer>
+</body>
+</html>
