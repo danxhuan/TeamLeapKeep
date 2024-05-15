@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Главная</title>
+    <title>Планирование путешествий</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
@@ -11,45 +11,54 @@
     <header>
         {% include 'header.html' %}
     </header>
-    <div class="container d-flex w-100 h-100 p-3 mx-auto flex-column">
-            <h1>Добро пожаловать в LeapKeep!</h1>
-            <p class="lead">Подготовьтесь к невероятным приключениям!
-                Мы предлагаем вам уникальный сервис для планирования вашего следующего путешествия.
-                Не важно, куда вы собираетесь — наслаждайтесь удобством и надежностью нашего инструмента
-                для создания идеального маршрута, организации активностей и бронирования размещения.</p>
-            <p class="lead">
-                <a href="/login" class="btn btn-lg btn-light fw-bold border-black bg-gray">Попробовать</a>
-            </p>
-
-            <h1>Добро пожаловать в LeapKeep!</h1>
-            <p class="lead">Подготовьтесь к невероятным приключениям!
-                Мы предлагаем вам уникальный сервис для планирования вашего следующего путешествия.
-                Не важно, куда вы собираетесь — наслаждайтесь удобством и надежностью нашего инструмента
-                для создания идеального маршрута, организации активностей и бронирования размещения.</p>
-            <p class="lead">
-                <a href="/login" class="btn btn-lg btn-light fw-bold border-black bg-gray">Попробовать</a>
-            </p>
-
-            <h1>Добро пожаловать в LeapKeep!</h1>
-            <p class="lead">Подготовьтесь к невероятным приключениям!
-                Мы предлагаем вам уникальный сервис для планирования вашего следующего путешествия.
-                Не важно, куда вы собираетесь — наслаждайтесь удобством и надежностью нашего инструмента
-                для создания идеального маршрута, организации активностей и бронирования размещения.</p>
-            <p class="lead">
-                <a href="/login" class="btn btn-lg btn-light fw-bold border-black bg-gray">Попробовать</a>
-            </p>
-
-            <h1>Добро пожаловать в LeapKeep!</h1>
-            <p class="lead">Подготовьтесь к невероятным приключениям!
-                Мы предлагаем вам уникальный сервис для планирования вашего следующего путешествия.
-                Не важно, куда вы собираетесь — наслаждайтесь удобством и надежностью нашего инструмента
-                для создания идеального маршрута, организации активностей и бронирования размещения.</p>
-            <p class="lead">
-                <a href="/login" class="btn btn-lg btn-light fw-bold border-black bg-gray">Попробовать</a>
-            </p>
+    <div class="container_for_history">
+            <div class=" order-md-first heading-section mx-auto">
+                <h2 class="mb-4">Планируйте свои приключения с нами</h2>
+                <p>Время отправиться в путешествие! Неважно, хотите ли вы испытать адреналин на кайтсерфинге, насладиться культурой в исторических городах или просто отдохнуть на пляже - мы поможем вам спланировать ваше идеальное путешествие.</p>
+                <p>Готовы отправиться в незабываемое путешествие? Мы здесь, чтобы помочь вам сделать вашу мечту о приключениях реальностью. Наши уникальные ресурсы и профессиональные услуги позволят вам создать идеальный маршрут, отвечающий вашим желаниям и потребностям.</p>
+                <p><a href="create_trip" class="btn btn-primary py-3 px-4">Попробовать</a></p>
+            </div>
     </div>
+    <div class="container_for_history mx-auto mt-4">
+        <div class="row">
+            <div class="col-md-6 d-flex align-items-center justify-content-center">
+                <div class="media-body text-center">
+                    <div class="icon mx-auto"><img src="/static/img/travel.png" alt="Путешествия" width="200" height="200"></div>
+                    <h3 class="heading mb-3">Путешествия</h3>
+                    <p>Откройте для себя новые миры и запланируйте свое приключение с нашей помощью, идеальное путешествие начинается здесь!</p>
+                </div>
+            </div>
+            <div class="col-md-6 d-flex align-items-center justify-content-center">
+                <div class="media block-6 services d-block">
+                    <div class="media-body text-center">
+                        <div class="icon mx-auto"><img src="/static/img/trip-details.png" alt="Детали поездок" width="200" height="200"></div>
+                        <h3 class="heading mb-3">Детали поездок</h3>
+                        <p>Все необходимое о путешествии на одной странице: маршруты и другие важные аспекты отдыха доступны в одном месте.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 d-flex align-items-center justify-content-center">
+                <div class="media block-6 services d-block">
+                    <div class="media-body text-center">
+                        <div class="icon mx-auto"><img src="/static/img/places.png" alt="Оценки мест" width="200" height="200"></div>
+                        <h3 class="heading mb-3">Оценки мест</h3>
+                        <p>Оцените посещенные места и помогите другим сделать свой отдых незабываемым.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 d-flex align-items-center justify-content-center">
+                <div class="media block-6 services d-block">
+                    <div class="media-body text-center">
+                        <div class="icon mx-auto"><img src="/static/img/personal-account.png" alt="Личный кабинет" width="200" height="200"></div>
+                        <h3 class="heading mb-3">Личный кабинет</h3>
+                        <p>Просматривайте и редактируйте данные вашего личного аккаунта в одном месте.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <footer>
         {% include 'footer.html' %}
     </footer>
 </body>
-</html>

@@ -8,24 +8,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
 <body>
-    <header class="header">
-        <div class="footer-nav">
-          <div class="d-flex flex-wrap justify-content-center py-3 mb-4 align-items-center">
-            <a href="/" class="me-5 mb-3 mb-md-0 link-body-emphasis text-decoration-none">
-              <svg class="bi me-2" width="40" height="32"><use xlink:href="#bootstrap"></use></svg>
-              <span class="fs-4">LeapKeep</span>
-            </a>
-            <ul class="nav nav-pills">
-              <li class="nav-item"><a href="/" class="nav-link active" aria-current="page">Главная</a></li>
-              <li class="nav-item"><a href="/create_trip" class="nav-link">Создать Поездку</a></li>
-              <li class="nav-item"><a href="/trip_details" class="nav-link">История Поездок</a></li>
-              <li class="nav-item"><a href="/rate_place" class="nav-link">Оценить Место</a></li>
-              <li class="nav-item"><a href="/places" class="nav-link">Оценки пользователей</a></li>
-              <li class="nav-item"><a href="/profile" class="nav-link">Личный кабинет</a></li>
-            </ul>
-          </div>
-        </div>
-      </header>
+    <header>
+      {% include 'header.html' %}
+    </header>
     <div class="container_auth">
         <h1 class="h1">Оценить место</h1>
         <form action="/rate_place" method="post" class="rate-place-form">

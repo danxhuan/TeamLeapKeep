@@ -17,13 +17,17 @@
             <form action="/profile" method="post" class="form">
                 <div class="form-group">
                     <div class="form-floating">
-                    <input type="text" id="username" name="username" value="{{ user.username }}" required class="form-control" placeholder="username">
-                    <label for="username">Изменить имя пользователя:</label>
+                        <input type="text" id="username" name="username" value="{{ user.username }}" required class="form-control" placeholder="username">
+                        <label for="username">Изменить имя пользователя:</label>
                     </div>
                     <div class="form-floating">
-                        <input type="password" id="password" name="password" value="{{ user.password }}" required class="form-control" placeholder="password">
-                        <label for="password">Изменить пароль:</label>
-                        </div>
+                        <input type="password" id="old_password" name="old_password" required class="form-control" placeholder="old password">
+                        <label for="old_password">Старый пароль:</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="password" id="new_password" name="new_password" required class="form-control" placeholder="new password">
+                        <label for="new_password">Новый пароль:</label>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="payment_method">Выберите способ оплаты:</label>
@@ -31,8 +35,10 @@
                         <option value="CASH" {% if user.payment_method == 'Наличные' %} selected {% endif %}>Наличные</option>
                         <option value="CARD" {% if user.payment_method == 'Карта' %} selected {% endif %}>Карта</option>
                     </select>
-
                 </div>
+                {% if error %}
+                    <p class="text-danger">{{ error }}</p>
+                {% endif %}
                 <button type="submit" class="btn btn-primary">Сохранить изменения</button>
             </form>
             <a href="/logout" class="logout-link">Выйти</a>

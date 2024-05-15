@@ -17,28 +17,36 @@
             <table class="trip-table">
                 <thead>
                     <tr>
-                    <th>Страна отправления</th>
-                    <th>Страна назначения</th>
-                    <th>Город отправления</th>
-                    <th>Город назначения</th>
-                    <th>Дата отправления <span class="calendar-icon"></span></th>
-                    <th>Дата прибытия <span class="calendar-icon"></span></th>
-                    <th>Продолжительность пребывания</th>
-                    <th>Продолжительность полета</th>
-                </tr>
-            </thead>
-                {% for trip in trips %}
-                <tr>
-                    <td>{{ trip.start_country }}</td>
-                    <td>{{ trip.finish_country }}</td>
-                    <td>{{ trip.start_city }}</td>
-                    <td>{{ trip.finish_city }}</td>
-                    <td>{{ trip.departure_date }}</td>
-                    <td>{{ trip.arrival_date }}</td>
-                    <td>{{ trip.stay_time }} дней</td>
-                    <td>{{ trip.flight_time }} часов</td>
-                </tr>
-                {% endfor %}
+                        <th>Страна отправления</th>
+                        <th>Страна назначения</th>
+                        <th>Город отправления</th>
+                        <th>Город назначения</th>
+                        <th>Дата отправления <span class="calendar-icon"></span></th>
+                        <th>Дата прибытия <span class="calendar-icon"></span></th>
+                        <th>Продолжительность пребывания</th>
+                        <th>Промежуточные точки</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for trip in trips %}
+                    <tr>
+                        <td>{{ trip.start_country }}</td>
+                        <td>{{ trip.finish_country }}</td>
+                        <td>{{ trip.start_city }}</td>
+                        <td>{{ trip.finish_city }}</td>
+                        <td>{{ trip.departure_date }}</td>
+                        <td>{{ trip.arrival_date }}</td>
+                        <td>{{ trip.stay_time }} дней</td>
+                        <td>
+                            <ul>
+                                {% for point in trip.points %}
+                                <li>{{ point.country_point }} - {{ point.city_point }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
             </table>
         </div>
     </main>
