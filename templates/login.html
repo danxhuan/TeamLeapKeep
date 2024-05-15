@@ -12,23 +12,28 @@
         {% include 'header.html' %}
     </header>
     <div class="container_auth">
-        <img class="mb-4" src="/docs/5.3/assets/brand/bootstrap-logo.svg" alt="" width="72" height="57">
+        <div class="d-flex flex-wrap justify-content-center py-3 mb-4 align-items-center">
+            <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="Логотип" width="100" height="100" class="logo me-3">
+            <div class="text_logo">
+                <span class="fs-1">LeapKeep</span>
+            </div>
+        </div>
         <h1 class="h3 mb-3 fw-normal">Вход</h1>
         {% if error %}
           <div class="alert alert-danger my-3">{{ error }}</div>
         {% endif %}
-            <form action="/login" method="POST">
-                <div class="form-floating">
-                    <input type="email" id="email" name="email" class="form-control" placeholder="example@mai.ru">
-                    <label for="email">Электронная почта:</label>
-                    </div>
-                    <div class="form-floating">
-                    <input type="password" id="password" name="password" class="form-control" placeholder="password">
-                    <label for="password">Пароль:</label>
-                    </div>
-                  <button class="btn btn-primary w-50 py-2" type="submit">Войти</button>
-            </form>
-            <p>Еще не зарегистрированы? <a href="/register">Зарегистрируйтесь здесь</a>.</p>
+        <form action="/login" method="POST">
+            <div class="form-floating">
+                <input type="email" id="email" name="email" class="form-control" placeholder="example@mai.ru">
+                <label for="email">Электронная почта:</label>
+            </div>
+            <div class="form-floating">
+                <input type="password" id="password" name="password" class="form-control" placeholder="password">
+                <label for="password">Пароль:</label>
+            </div>
+            <button class="btn btn-primary w-50 py-2" type="submit">Войти</button>
+        </form>
+        <p>Еще не зарегистрированы? <a href="/register">Зарегистрируйтесь здесь</a>.</p>
     </div>
     <footer>
         {% include 'footer.html' %}

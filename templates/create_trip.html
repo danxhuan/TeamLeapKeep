@@ -6,6 +6,47 @@
     <title>Создать поездку</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    
+    <script>
+        function addAdditionalFields() {
+            var additionalFieldsContainer = document.getElementById('additional-fields-container');
+            var additionalFields = document.createElement('div');
+            additionalFields.className = 'additional-fields';
+            additionalFields.innerHTML = `
+                <div class="form-group">
+                    <label for="point_country">Промежуточная страна:</label>
+                    <input type="text" class="form-control" name="point_country">
+                </div>
+                <div class="form-group">
+                    <label for="point_city">Промежуточный город:</label>
+                    <input type="text" class="form-control" name="point_city">
+                </div>
+                <hr> 
+            `;
+            additionalFieldsContainer.appendChild(additionalFields);
+        }
+    </script>
+
+    <script>
+        var currentStep = 1;
+        function nextStep(step) {
+            document.getElementById('step-' + step).style.display = 'none';
+            document.getElementById('step-' + (step + 1)).style.display = 'block';
+            currentStep = step + 1;
+        }
+
+        function prevStep(step) {
+            document.getElementById('step-' + step).style.display = 'none';
+            document.getElementById('step-' + (step - 1)).style.display = 'block';
+            currentStep = step - 1;
+        }
+
+        document.getElementById('trip-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            // Отправка данных на сервер
+        });
+    </script>
+
 </head>
 <header>
     {% include 'header.html' %}
@@ -13,35 +54,49 @@
 <body>
     <div class="container">
         <h2 class="h1">Создать поездку</h2>
-        <form action="/create_trip" method="post">
-            <div class="form-group">
-                <label for="start_country">Страна отправления:</label>
-                <input type="text" class="form-control" id="start_country" name="start_country" required>
+        <form id="trip-form" action="/create_trip" method="post">
+            <div id="step-1">
+                <div class="form-group">
+                    <label for="start_country">Страна отправления:</label>
+                    <input type="text" class="form-control" id="start_country" name="start_country" required>
+                </div>
+                <div class="form-group">
+                    <label for="start_city">Город отправления:</label>
+                    <input type="text" class="form-control" id="start_city" name="start_city" required>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="nextStep(1)">Далее</button>
             </div>
-            <div class="form-group">
-                <label for="finish_country">Страна назначения:</label>
-                <input type="text" class="form-control" id="finish_country" name="finish_country" required>
+            <div id="step-2" style="display:none;">
+                <div class="form-group">
+                    <label for="finish_country">Страна назначения:</label>
+                    <input type="text" class="form-control" id="finish_country" name="finish_country" required>
+                </div>
+                <div class="form-group">
+                    <label for="finish_city">Город назначения:</label>
+                    <input type="text" class="form-control" id="finish_city" name="finish_city" required>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="nextStep(2)">Далее</button>
+                <button type="button" class="btn btn-custom" onclick="prevStep(2)">Назад</button>
+                <div id="additional-fields-container">
+                    <button type="button" class="btn btn-primary" onclick="addAdditionalFields()">Добавить промежуточную точку</button>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="start_city">Город отправления:</label>
-                <input type="text" class="form-control" id="start_city" name="start_city" required>
+            <div id="step-3" style="display:none;">
+                <div class="form-group">
+                    <label for="departure_date">Дата отправления:</label>
+                    <input type="date" class="form-control" id="departure_date" name="departure_date" required>
+                </div>
+                <div class="form-group">
+                    <label for="arrival_date">Дата прибытия:</label>
+                    <input type="date" class="form-control" id="arrival_date" name="arrival_date" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Создать поездку</button>
+                <button type="button" class="btn btn-custom" onclick="prevStep(3)">Назад</button>
             </div>
-            <div class="form-group">
-                <label for="finish_city">Город назначения:</label>
-                <input type="text" class="form-control" id="finish_city" name="finish_city" required>
-            </div>
-            <div class="form-group">
-                <label for="departure_date">Дата отправления:</label>
-                <input type="date" class="form-control" id="departure_date" name="departure_date" required>
-            </div>
-            <div class="form-group">
-                <label for="arrival_date">Дата прибытия:</label>
-                <input type="date" class="form-control" id="arrival_date" name="arrival_date" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Создать поездку</button>
         </form>
     </div>
     <footer>
         {% include 'footer.html' %}
     </footer>
+</body>
 </html>
