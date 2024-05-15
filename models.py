@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, date
 from enum import Enum
+from werkzeug.security import check_password_hash
 
 db = SQLAlchemy()
 
@@ -16,6 +17,9 @@ class User(db.Model):
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
     payment_method = db.Column(db.Enum(PaymentMethod), nullable=True)
+
+    def check_password(self, password):
+        return check_password_hash(self.password, password)
 
 
 class Trip(db.Model):

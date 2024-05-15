@@ -1,9 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, session
-from flask_sqlalchemy import SQLAlchemy
 from models import db, User, Trip, Rating
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from check import username_check, email_check, country_check, password_check
+from random import randint
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
@@ -67,7 +67,7 @@ def login():
 
 @app.route('/create_trip', methods=['GET', 'POST'])
 def create_trip():
-    if 'user_id' not in session or session['user_id'] is None:
+    if 'user_id' not in session or session['user_id'] is None or session is None:
         return redirect(url_for('login'))
     if request.method == 'POST':
         start_country = request.form['start_country']
@@ -78,16 +78,20 @@ def create_trip():
             request.form['departure_date'], '%Y-%m-%d')
         arrival_date = datetime.strptime(
             request.form['arrival_date'], '%Y-%m-%d')
-        stay_time = request.form['stay_time']
-        flight_time = request.form['flight_time']
-        new_trip = Trip(start_country=start_country, finish_country=finish_country,
-                        start_city=start_city, finish_city=finish_city,
-                        departure_date=departure_date, arrival_date=arrival_date,
-                        stay_time=stay_time, flight_time=flight_time,
+        stay_time = (arrival_date - departure_date).days
+        flight_time = randint(1, 24)
+        new_trip = Trip(start_country=start_country,
+                        finish_country=finish_country,
+                        start_city=start_city,
+                        finish_city=finish_city,
+                        departure_date=departure_date,
+                        arrival_date=arrival_date,
+                        stay_time=stay_time,
+                        flight_time=flight_time,
                         user_id=session['user_id'])
         db.session.add(new_trip)
         db.session.commit()
-        return redirect(url_for('index'))
+        return redirect(url_for('trip_details'))
     else:
         return render_template('create_trip.html')
 
@@ -95,24 +99,30 @@ def create_trip():
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
     error = None
-    if 'user_id' not in session or session['user_id'] is None:
+    if 'user_id' not in session or session['user_id'] is None or session is None:
         return redirect(url_for('login'))
     if request.method == 'POST':
         new_username = request.form['username']
         new_payment_method = request.form['payment_method']
-        new_password = request.form['password']
-        if not username_check(new_username):
-            error = 'Имя пользователя не соответствует требованиям.'
+        old_password = request.form['old_password']
+        new_password = request.form['new_password']
         user = User.query.filter_by(id=session['user_id']).first()
-        user.username = new_username
-        user.payment_method = new_payment_method
-        if new_password:
-            user.password = generate_password_hash(new_password)
-        db.session.commit()
-        return redirect(url_for('profile'), error=error)
-    else:
-        user = User.query.filter_by(id=session['user_id']).first()
-        return render_template('profile.html', user=user)
+        if not check_password_hash(user.password, old_password):
+            error = 'Неправильный старый пароль'
+        else:
+            if not username_check(new_username):
+                error = 'Имя пользователя не соответствует требованиям.'
+            if not password_check(new_password):
+                error = 'Новый пароль не соответствует требованиям.'
+            if not error:
+                user.username = new_username
+                user.payment_method = new_payment_method
+                if new_password:
+                    user.password = generate_password_hash(new_password)
+                db.session.commit()
+                return redirect(url_for('profile'))
+    user = User.query.filter_by(id=session['user_id']).first()
+    return render_template('profile.html', user=user, error=error)
 
 
 @app.route('/logout')
@@ -121,18 +131,18 @@ def logout():
     return redirect(url_for('login'))
 
 
-@app.route('/trips_history', methods=['GET', 'POST'])
-def trips_history():
-    if 'user_id' not in session or session['user_id'] is None:
+@app.route('/trip_details', methods=['GET', 'POST'])
+def trip_details():
+    if 'user_id' not in session or session['user_id'] is None or session is None:
         return redirect(url_for('login'))
     trips = Trip.query.all()
-    return render_template('trips_history.html', trips=trips)
+    return render_template('trip_details.html', trips=trips)
 
 
 @app.route('/rate_place', methods=['GET', 'POST'])
 def rate_place():
     error = None
-    if 'user_id' not in session or session['user_id'] is None:
+    if 'user_id' not in session or session['user_id'] is None or session is None:
         return redirect(url_for('login'))
     if request.method == 'POST':
         place_name = request.form['place_name'].rstrip(' ')
@@ -150,13 +160,13 @@ def rate_place():
                                 rating=user_rating, user_id=user_id)
             db.session.add(new_rating)
         db.session.commit()
-        return redirect(url_for('index'))
+        return redirect(url_for('places'))
     return render_template('rate_place.html', error=error)
 
 
 @app.route('/places', methods=['GET', 'POST'])
 def places():
-    if 'user_id' not in session or session['user_id'] is None:
+    if 'user_id' not in session or session['user_id'] is None or session is None:
         return redirect(url_for('login'))
     places = Rating.query.all()
     return render_template('places.html', places=places)
