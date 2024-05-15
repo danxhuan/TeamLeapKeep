@@ -71,8 +71,8 @@ def create_trip():
         return redirect(url_for('login'))
     if request.method == 'POST':
         start_country = request.form['start_country']
-        start_city = request.form['start_city']
         finish_country = request.form['finish_country']
+        start_city = request.form['start_city']
         finish_city = request.form['finish_city']
         departure_date = datetime.strptime(
             request.form['departure_date'], '%Y-%m-%d')
@@ -104,21 +104,25 @@ def profile():
     if request.method == 'POST':
         new_username = request.form['username']
         new_payment_method = request.form['payment_method']
-        new_password = request.form['password']
-        if not username_check(new_username):
-            error = 'Имя пользователя не соответствует требованиям.'
-        if not password_check(new_password):
-            error = 'Пароль не соответствует требованиям.'
+        old_password = request.form['old_password']
+        new_password = request.form['new_password']
         user = User.query.filter_by(id=session['user_id']).first()
-        user.username = new_username
-        user.payment_method = new_payment_method
-        if new_password:
-            user.password = generate_password_hash(new_password)
-        db.session.commit()
-        return redirect(url_for('profile'))
-    else:
-        user = User.query.filter_by(id=session['user_id']).first()
-        return render_template('profile.html', user=user, error=error)
+        if not check_password_hash(user.password, old_password):
+            error = 'Неправильный старый пароль'
+        else:
+            if not username_check(new_username):
+                error = 'Имя пользователя не соответствует требованиям.'
+            if not password_check(new_password):
+                error = 'Новый пароль не соответствует требованиям.'
+            if not error:
+                user.username = new_username
+                user.payment_method = new_payment_method
+                if new_password:
+                    user.password = generate_password_hash(new_password)
+                db.session.commit()
+                return redirect(url_for('profile'))
+    user = User.query.filter_by(id=session['user_id']).first()
+    return render_template('profile.html', user=user, error=error)
 
 
 @app.route('/logout')
