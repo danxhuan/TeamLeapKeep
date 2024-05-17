@@ -1,9 +1,17 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, date
 from enum import Enum
-from werkzeug.security import check_password_hash
 
 db = SQLAlchemy()
+
+points_db = SQLAlchemy()
+
+
+class Points(db.Model):
+    id = points_db.Column(db.Integer, primary_key=True)
+    country_point = points_db.Column(db.String(100))
+    city_point = points_db.Column(db.String(100))
+    trip_id = points_db.Column(db.Integer)
 
 
 class PaymentMethod(Enum):
@@ -31,7 +39,6 @@ class Trip(db.Model):
     _departure_date = db.Column('departure_date', db.DateTime, nullable=False)
     _arrival_date = db.Column('arrival_date', db.DateTime, nullable=False)
     stay_time = db.Column(db.Integer, nullable=True)
-    flight_time = db.Column(db.Integer, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('trips', lazy=True))
 
