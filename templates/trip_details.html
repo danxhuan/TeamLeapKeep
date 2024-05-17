@@ -18,24 +18,25 @@
                 <thead>
                     <tr>
                         <th>Страна отправления</th>
-                        <th>Страна назначения</th>
                         <th>Город отправления</th>
+                        <th>Страна назначения</th>
                         <th>Город назначения</th>
                         <th>Дата отправления <span class="calendar-icon"></span></th>
                         <th>Дата прибытия <span class="calendar-icon"></span></th>
                         <th>Продолжительность пребывания</th>
                         <th>Промежуточные точки</th>
+                        <th>Действия</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for trip in trips %}
                     <tr>
                         <td>{{ trip.start_country }}</td>
-                        <td>{{ trip.finish_country }}</td>
                         <td>{{ trip.start_city }}</td>
+                        <td>{{ trip.finish_country }}</td>
                         <td>{{ trip.finish_city }}</td>
-                        <td>{{ trip.departure_date }}</td>
-                        <td>{{ trip.arrival_date }}</td>
+                        <td>{{ trip.departure_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ trip.arrival_date.strftime('%Y-%m-%d') }}</td>
                         <td>{{ trip.stay_time }} дней</td>
                         <td>
                             <ul>
@@ -43,6 +44,21 @@
                                 <li>{{ point.country_point }} - {{ point.city_point }}</li>
                                 {% endfor %}
                             </ul>
+                        </td>
+                        <td>
+                            <form action="https://www.booking.com/searchresults.ru.html" method="get" target="_blank">
+                                <input type="hidden" name="ss" value="{{ trip.finish_city }}">
+                                <input type="hidden" name="depart_date" value="{{ trip.departure_date.strftime('%Y-%m-%d') }}">
+                                <input type="hidden" name="return_date" value="{{ trip.arrival_date.strftime('%Y-%m-%d') }}">
+                                <button type="submit">Забронировать отели</button>
+                            </form>
+                            <form action="https://www.aviasales.ru/search" method="get" target="_blank" style="margin-top: 10px;">
+                                <input type="hidden" name="origin" value="{{ iata_codes[trip.start_city] }}">
+                                <input type="hidden" name="destination" value="{{ iata_codes[trip.finish_city] }}">
+                                <input type="hidden" name="depart_date" value="{{ trip.departure_date.strftime('%Y-%m-%d') }}">
+                                <input type="hidden" name="return_date" value="{{ trip.arrival_date.strftime('%Y-%m-%d') }}">
+                                <button type="submit">Купить авиабилеты</button>
+                            </form>
                         </td>
                     </tr>
                     {% endfor %}
