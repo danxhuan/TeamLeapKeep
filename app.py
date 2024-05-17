@@ -1,9 +1,11 @@
-from flask import Flask, render_template, request, redirect, url_for, session
-from models import db, User, Trip, Rating
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from models import db, User, Trip, Rating, Points
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-from check import username_check, email_check, country_check, password_check
-from random import randint
+from check import username_check, email_check, country_check, password_check, city_check
+import requests
+import sqlite3
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
@@ -67,6 +69,7 @@ def login():
 
 @app.route('/create_trip', methods=['GET', 'POST'])
 def create_trip():
+    error = None
     if 'user_id' not in session or session['user_id'] is None or session is None:
         return redirect(url_for('login'))
     if request.method == 'POST':
@@ -79,19 +82,34 @@ def create_trip():
         arrival_date = datetime.strptime(
             request.form['arrival_date'], '%Y-%m-%d')
         stay_time = (arrival_date - departure_date).days
-        flight_time = randint(1, 24)
-        new_trip = Trip(start_country=start_country,
-                        finish_country=finish_country,
-                        start_city=start_city,
-                        finish_city=finish_city,
-                        departure_date=departure_date,
-                        arrival_date=arrival_date,
-                        stay_time=stay_time,
-                        flight_time=flight_time,
-                        user_id=session['user_id'])
-        db.session.add(new_trip)
-        db.session.commit()
-        return redirect(url_for('trip_details'))
+        if not country_check(start_country) or not country_check(finish_country):
+            error = 'Название пункта не соответствует требованиям.'
+            return render_template('create_trip.html', error=error)
+        elif not city_check(start_city) or not city_check(finish_city):
+            error = 'Название пункта не соответствует требованиям.'
+            return render_template('create_trip.html', error=error)
+        elif stay_time < 0:
+            error = 'Некорректные даты прибытия и отправления.'
+            return render_template('create_trip.html', error=error)
+        else:
+            new_trip = Trip(start_country=start_country,
+                            finish_country=finish_country,
+                            start_city=start_city,
+                            finish_city=finish_city,
+                            departure_date=departure_date,
+                            arrival_date=arrival_date,
+                            stay_time=stay_time,
+                            user_id=session['user_id'])
+            db.session.add(new_trip)
+            db.session.commit()
+            point_countries = request.form.getlist('point_country')
+            point_cities = request.form.getlist('point_city')
+            for country, city in zip(point_countries, point_cities):
+                new_point = Points(country_point=country,
+                                   city_point=city, trip_id=new_trip.id)
+                db.session.add(new_point)
+            db.session.commit()
+            return redirect(url_for('trip_details'))
     else:
         return render_template('create_trip.html')
 
@@ -136,6 +154,8 @@ def trip_details():
     if 'user_id' not in session or session['user_id'] is None or session is None:
         return redirect(url_for('login'))
     trips = Trip.query.all()
+    for trip in trips:
+        trip.points = Points.query.filter_by(trip_id=trip.id).all()
     return render_template('trip_details.html', trips=trips)
 
 
@@ -144,23 +164,26 @@ def rate_place():
     error = None
     if 'user_id' not in session or session['user_id'] is None or session is None:
         return redirect(url_for('login'))
+
     if request.method == 'POST':
         place_name = request.form['place_name'].rstrip(' ')
         user_rating = request.form['rating']
         user_id = session['user_id']
-        if not country_check(place_name):
+        if not country_check(place_name) and not city_check(place_name):
             error = 'Название пункта не соответствует требованиям.'
-        existing_rating = Rating.query.filter_by(
-            place_name=place_name, user_id=user_id).first()
-        if existing_rating is not None:
-            existing_rating.rating = round((
-                (int(user_rating) + int(existing_rating.rating)) / 2), 2)
-        else:
-            new_rating = Rating(place_name=place_name,
-                                rating=user_rating, user_id=user_id)
-            db.session.add(new_rating)
-        db.session.commit()
-        return redirect(url_for('places'))
+        if not error:
+            existing_rating = Rating.query.filter_by(
+                place_name=place_name, user_id=user_id).first()
+
+            if existing_rating is not None:
+                existing_rating.rating = round((
+                    (int(user_rating) + int(existing_rating.rating)) / 2), 2)
+            else:
+                new_rating = Rating(place_name=place_name,
+                                    rating=user_rating, user_id=user_id)
+                db.session.add(new_rating)
+            db.session.commit()
+            return redirect(url_for('places'))
     return render_template('rate_place.html', error=error)
 
 
@@ -170,6 +193,25 @@ def places():
         return redirect(url_for('login'))
     places = Rating.query.all()
     return render_template('places.html', places=places)
+
+
+YANDEX_API_KEY = "0921d4cd-e21d-4ba0-8b75-b8f0680be75a"
+
+
+@app.route('/geocode')
+def geocode():
+    address = request.args.get('address')
+    if not address:
+        return jsonify({'error': 'Address parameter is required'}), 400
+
+    yandex_url = f"https://geocode-maps.yandex.ru/1.x/"
+    params = {
+        'apikey': YANDEX_API_KEY,
+        'format': 'json',
+        'geocode': address
+    }
+    response = requests.get(yandex_url, params=params)
+    return jsonify(response.json())
 
 
 if __name__ == '__main__':
