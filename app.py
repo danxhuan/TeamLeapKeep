@@ -1,9 +1,11 @@
-from flask import Flask, render_template, request, redirect, url_for, session
-from models import db, User, Trip, Rating
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from models import db, User, Trip, Rating, Points, Comment
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-from check import username_check, email_check, country_check, password_check
-from random import randint
+from check import username_check, email_check, country_check, password_check, city_check, city_point_check, country_point_check
+import requests
+import sqlite3
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
@@ -79,7 +81,6 @@ def create_trip():
         arrival_date = datetime.strptime(
             request.form['arrival_date'], '%Y-%m-%d')
         stay_time = (arrival_date - departure_date).days
-        flight_time = randint(1, 24)
         new_trip = Trip(start_country=start_country,
                         finish_country=finish_country,
                         start_city=start_city,
@@ -87,13 +88,101 @@ def create_trip():
                         departure_date=departure_date,
                         arrival_date=arrival_date,
                         stay_time=stay_time,
-                        flight_time=flight_time,
                         user_id=session['user_id'])
         db.session.add(new_trip)
+        db.session.commit()
+        point_countries = request.form.getlist('point_country')
+        point_cities = request.form.getlist('point_city')
+        for country, city in zip(point_countries, point_cities):
+            if not country_check(country) or not city_check(city):
+                return jsonify({'valid': False, 'error': 'Название промежуточного пункта не соответствует требованиям.'})
+            new_point = Points(country_point=country,
+                               city_point=city, trip_id=new_trip.id)
+            db.session.add(new_point)
         db.session.commit()
         return redirect(url_for('trip_details'))
     else:
         return render_template('create_trip.html')
+
+
+@app.route('/validate_step', methods=['POST'])
+def validate_step():
+    step = int(request.form.get('step'))
+    start_country = request.form.get('start_country')
+    start_city = request.form.get('start_city')
+    finish_country = request.form.get('finish_country')
+    finish_city = request.form.get('finish_city')
+    point_countries = request.form.getlist('point_countries')
+    point_cities = request.form.getlist('point_cities')
+    if step == 1:
+        if not start_country or not start_city:
+            return jsonify({'valid': False, 'error': 'Заполните страну и город отправления.'})
+        if not country_check(start_country) or not city_check(start_city):
+            return jsonify({'valid': False, 'error': 'Название пункта отправления не соответствует требованиям.'})
+    elif step == 2:
+        if not finish_country or not finish_city:
+            return jsonify({'valid': False, 'error': 'Заполните страну и город назначения.'})
+        if not country_check(finish_country) or not city_check(finish_city):
+            return jsonify({'valid': False, 'error': 'Название пункта назначения не соответствует требованиям.'})
+        for country, city in zip(point_countries, point_cities):
+            if not country_check(country) or not city_check(city):
+                return jsonify({'valid': False, 'error': 'Название промежуточного пункта не соответствует требованиям.'})
+    elif step == 4:
+        departure_date = request.form.get('departure_date')
+        arrival_date = request.form.get('arrival_date')
+        if not departure_date or not arrival_date:
+            return jsonify({'valid': False, 'error': 'Заполните даты отправления и прибытия.'})
+        else:
+            departure = datetime.datetime.strptime(departure_date, '%Y-%m-%d')
+            arrival = datetime.datetime.strptime(arrival_date, '%Y-%m-%d')
+            stay_time = (arrival - departure).days
+            if stay_time < 0:
+                return jsonify({'valid': False, 'error': 'Некорректные даты прибытия и отправления.'})
+    return jsonify({'valid': True})
+
+
+@app.route('/validate_dates', methods=['POST'])
+def validate_dates():
+    departure_date = request.form['departure_date']
+    arrival_date = request.form['arrival_date']
+    departure = datetime.strptime(departure_date, '%Y-%m-%d')
+    arrival = datetime.strptime(arrival_date, '%Y-%m-%d')
+    if arrival <= departure:
+        return jsonify({'valid': False, 'error': 'Некорректные даты прибытия и отправления.'})
+    else:
+        return jsonify({'valid': True})
+
+
+YANDEX_API_KEY = "0921d4cd-e21d-4ba0-8b75-b8f0680be75a"
+
+
+@app.route('/validate_city', methods=['POST'])
+def validate_city():
+    city = request.form.get('city')
+    is_valid = city_point_check(city)
+    return jsonify(valid=is_valid)
+
+
+@app.route('/validate_country', methods=['POST'])
+def validate_country():
+    country = request.form.get('country')
+    is_valid = country_point_check(country)
+    return jsonify(valid=is_valid)
+
+
+@app.route('/geocode')
+def geocode():
+    address = request.args.get('address')
+    if not address:
+        return jsonify({'error': 'Address parameter is required'})
+    yandex_url = f"https://geocode-maps.yandex.ru/1.x/"
+    params = {
+        'apikey': YANDEX_API_KEY,
+        'format': 'json',
+        'geocode': address
+    }
+    response = requests.get(yandex_url, params=params)
+    return jsonify(response.json())
 
 
 @app.route('/profile', methods=['GET', 'POST'])
@@ -136,31 +225,49 @@ def trip_details():
     if 'user_id' not in session or session['user_id'] is None or session is None:
         return redirect(url_for('login'))
     trips = Trip.query.all()
+    for trip in trips:
+        trip.points = Points.query.filter_by(trip_id=trip.id).all()
     return render_template('trip_details.html', trips=trips)
 
 
 @app.route('/rate_place', methods=['GET', 'POST'])
 def rate_place():
     error = None
-    if 'user_id' not in session or session['user_id'] is None or session is None:
+    if 'user_id' not in session or session['user_id'] is None:
         return redirect(url_for('login'))
     if request.method == 'POST':
         place_name = request.form['place_name'].rstrip(' ')
         user_rating = request.form['rating']
         user_id = session['user_id']
-        if not country_check(place_name):
+        user = User.query.filter_by(id=user_id).first()
+        username = user.username
+        comment_content = request.form.get('comment', None)
+        anonymous = request.form.get('anonymous', None)
+        if not country_check(place_name) and not city_check(place_name):
             error = 'Название пункта не соответствует требованиям.'
-        existing_rating = Rating.query.filter_by(
-            place_name=place_name, user_id=user_id).first()
-        if existing_rating is not None:
-            existing_rating.rating = round((
-                (int(user_rating) + int(existing_rating.rating)) / 2), 2)
-        else:
-            new_rating = Rating(place_name=place_name,
-                                rating=user_rating, user_id=user_id)
-            db.session.add(new_rating)
-        db.session.commit()
-        return redirect(url_for('places'))
+        if not error:
+            existing_rating = Rating.query.filter_by(
+                place_name=place_name, user_id=user_id).first()
+            if existing_rating:
+                existing_rating.rating = round(
+                    (int(user_rating) + existing_rating.rating) / 2, 2)
+                if comment_content:
+                    new_comment = Comment(
+                        content=comment_content, rating_id=existing_rating.id,
+                        name='guest' if anonymous else username, user_id=user_id if not anonymous else None)
+                    db.session.add(new_comment)
+            else:
+                new_rating = Rating(place_name=place_name,
+                                    rating=user_rating, user_id=user_id)
+                db.session.add(new_rating)
+                db.session.commit()
+                if comment_content:
+                    new_comment = Comment(
+                        content=comment_content, rating_id=new_rating.id,
+                        name='guest' if anonymous else username, user_id=user_id if not anonymous else None)
+                    db.session.add(new_comment)
+            db.session.commit()
+            return redirect(url_for('places'))
     return render_template('rate_place.html', error=error)
 
 

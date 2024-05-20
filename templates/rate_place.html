@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Оценить место</title>
+    <title>Оценить Город</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
@@ -12,15 +12,26 @@
       {% include 'header.html' %}
     </header>
     <div class="container_auth">
-        <h1 class="h1">Оценить место</h1>
-        <form action="/rate_place" method="post" class="rate-place-form">
+        <h1 class="h1">Оценить Город</h1>
+        {% if error %}
+          <div class="alert alert-danger my-3">{{ error }}</div>
+        {% endif %}
+        <form action="{{ url_for('rate_place') }}" method="post" class="rate-place-form">
             <div class="form-group">
-                <label for="place_name">Название места:</label>
-                <input type="text" id="place_name" name="place_name" class="form-control">
+                <label for="place_name">Название Города:</label>
+                <input type="text" id="place_name" name="place_name" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="comment">Комментарий:</label>
+                <input type="text" id="comment" name="comment" class="form-control">
+            </div>
+            <div class="form-group form-check">
+                <input type="checkbox" class="form-check-input" id="anonymous" name="anonymous">
+                <label class="form-check-label" for="anonymous">Анонимный комментарий</label>
             </div>
             <div class="form-group">
                 <label for="rating">Рейтинг:</label>
-                <input type="number" id="rating" name="rating" min="1" max="10" class="form-control">
+                <input type="number" id="rating" name="rating" min="1" max="10" class="form-control" required>
             </div>
             <button type="submit" class="btn btn-primary">Оценить</button>
         </form>

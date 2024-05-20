@@ -13,25 +13,33 @@
     </header>
     <main>
         <div class="container_for_places">
-            <h1 class="h1">Оценки мест</h1>
+            <h1 class="h1">Оценки Городов</h1>
             <table class="trip-table">
                 <thead>
                     <tr>
-                        <th>Название места</th>
+                        <th>Название Города</th>
                         <th>Рейтинг</th>
+                        <th>Комментарии</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for place in places %}
                     <tr>
                         <td>{{ place.place_name }}</td>
-                        <td>{{ place.rating }}</td>
+                        <td>{{ place.rating }} / 10</td>
+                        <td>
+                            <ul>
+                                {% for comment in place.comments %}
+                                <li><strong>@{{ comment.name }}</strong> {{ comment.content }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-        </main>
+    </main>
     <footer>
         {% include 'footer.html' %}
     </footer>

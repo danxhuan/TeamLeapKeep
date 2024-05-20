@@ -6,55 +6,217 @@
     <title>Создать поездку</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         function addAdditionalFields() {
             var additionalFieldsContainer = document.getElementById('additional-fields-container');
-            var additionalFields = document.createElement('div');
-            additionalFields.className = 'additional-fields';
-            additionalFields.innerHTML = `
+            var currentFieldsCount = additionalFieldsContainer.getElementsByClassName('additional-fields').length;
+            if (currentFieldsCount >= 10) {
+                alert('Максимальное количество промежуточных точек - 10.');
+                return;
+            }
+            var additionalFieldsDiv = document.createElement('div');
+            additionalFieldsDiv.className = 'additional-fields';
+            additionalFieldsDiv.innerHTML = `
                 <div class="form-group">
-                    <label for="point_country">Промежуточная страна:</label>
-                    <input type="text" class="form-control" name="point_country">
+                    <label for="point_country_${currentFieldsCount + 1}">Промежуточная страна:</label>
+                    <input type="text" class="form-control" name="point_country" id="point_country_${currentFieldsCount + 1}">
                 </div>
                 <div class="form-group">
-                    <label for="point_city">Промежуточный город:</label>
-                    <input type="text" class="form-control" name="point_city">
+                    <label for="point_city_${currentFieldsCount + 1}">Промежуточный город:</label>
+                    <input type="text" class="form-control" name="point_city" id="point_city_${currentFieldsCount + 1}">
                 </div>
-                <hr> 
             `;
-            additionalFieldsContainer.appendChild(additionalFields);
+            var addButton = document.getElementById('add-button');
+            additionalFieldsContainer.insertBefore(additionalFieldsDiv, addButton);
         }
-    </script>
-
-    <script>
+        function removeAdditionalFields() {
+            var additionalFieldsContainer = document.getElementById('additional-fields-container');
+            var additionalFields = additionalFieldsContainer.getElementsByClassName('additional-fields');
+            if (additionalFields.length > 0) {
+                additionalFieldsContainer.removeChild(additionalFields[additionalFields.length - 1]);
+            } else {
+                alert('Нет промежуточных точек для удаления.');
+            }
+        }
         var currentStep = 1;
+        function showError(message) {
+            var errorContainer = document.getElementById('error-container');
+            errorContainer.textContent = message;
+            errorContainer.style.display = 'block';
+        }
+        function clearError() {
+            var errorContainer = document.getElementById('error-container');
+            errorContainer.textContent = '';
+            errorContainer.style.display = 'none';
+        }
         function nextStep(step) {
-            document.getElementById('step-' + step).style.display = 'none';
+            if (step === 1) {
+                validateStartPoint(function(isValid, errorMessage) {
+                    if (isValid) {
+                        proceedToNextStep(step);
+                    } else {
+                        showError(errorMessage);
+                    }
+                });
+            } else if (step === 2) {
+                validateFinishPoint(function(isValid, errorMessage) {
+                    if (isValid) {
+                        validatePoints(function(isValid, errorMessage) {
+                            if (isValid) {
+                                proceedToNextStep(step);
+                            } else {
+                                showError(errorMessage);
+                            }
+                        });
+                    } else {
+                        showError(errorMessage);
+                    }
+                });
+            } else {
+                clearError();
+                proceedToNextStep(step);
+            }
+        }
+        function proceedToNextStep(step) {
+            document.getElementById('step-' + currentStep).style.display = 'none';
             document.getElementById('step-' + (step + 1)).style.display = 'block';
             currentStep = step + 1;
         }
-
         function prevStep(step) {
-            document.getElementById('step-' + step).style.display = 'none';
+            document.getElementById('step-' + currentStep).style.display = 'none';
             document.getElementById('step-' + (step - 1)).style.display = 'block';
             currentStep = step - 1;
         }
-
-        document.getElementById('trip-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            // Отправка данных на сервер
-        });
+        function validateStartPoint(callback) {
+            var startCountry = document.getElementById('start_country').value.trim();
+            var startCity = document.getElementById('start_city').value.trim();
+            if (!startCountry || !startCity) {
+                callback(false, 'Заполните страну и город отправления.');
+                return;
+            }
+            $.post('/validate_country', { country: startCountry }, function(response) {
+                if (!response.valid) {
+                    callback(false, 'Некорректная страна отправления: ' + startCountry);
+                    return;
+                }
+                $.post('/validate_city', { city: startCity }, function(response) {
+                    if (!response.valid) {
+                        callback(false, 'Некорректный город отправления: ' + startCity);
+                        return;
+                    }
+                    callback(true, '');
+                });
+            });
+        }
+        function validateFinishPoint(callback) {
+            var finishCountry = document.getElementById('finish_country').value.trim();
+            var finishCity = document.getElementById('finish_city').value.trim();
+            if (!finishCountry || !finishCity) {
+                callback(false, 'Заполните страну и город назначения.');
+                return;
+            }
+            $.post('/validate_country', { country: finishCountry }, function(response) {
+                if (!response.valid) {
+                    callback(false, 'Некорректная страна назначения: ' + finishCountry);
+                    return;
+                }
+                $.post('/validate_city', { city: finishCity }, function(response) {
+                    if (!response.valid) {
+                        callback(false, 'Некорректный город назначения: ' + finishCity);
+                        return;
+                    }
+                    callback(true, '');
+                });
+            });
+        }
+        function validatePoints(callback) {
+                clearError();
+                var pointCountries = [];
+                var pointCities = [];
+                var additionalFields = document.getElementsByClassName('additional-fields');
+                if (additionalFields.length === 0) {
+                    callback(true, '');
+                    return;
+                }
+                for (var i = 0; i < additionalFields.length; i++) {
+                    var countryInput = additionalFields[i].querySelector('input[name="point_country"]');
+                    var cityInput = additionalFields[i].querySelector('input[name="point_city"]');
+                    if (countryInput && cityInput) {
+                        var countryValue = countryInput.value.trim();
+                        var cityValue = cityInput.value.trim();
+                        if (!countryValue || !cityValue) {
+                            callback(false, 'Заполните все промежуточные точки.');
+                            return;
+                        }
+                        pointCountries.push(countryValue);
+                        pointCities.push(cityValue);
+                    }
+                }
+                var checkCount = pointCountries.length + pointCities.length;
+                var validCount = 0;
+                var errorMessage = '';
+                pointCountries.forEach(function(country, index) {
+                    $.post('/validate_country', { country: country }, function(response) {
+                        if (!response.valid) {
+                            errorMessage = 'Некорректная страна для промежуточной точки: ' + country;
+                            callback(false, errorMessage);
+                            return;
+                        } else {
+                            validCount++;
+                        }
+                        if (validCount === checkCount) {
+                            callback(true, '');
+                        }
+                    });
+                });
+                pointCities.forEach(function(city, index) {
+                    $.post('/validate_city', { city: city }, function(response) {
+                        if (!response.valid) {
+                            errorMessage = 'Некорректный город для промежуточной точки: ' + city;
+                            callback(false, errorMessage);
+                            return;
+                        } else {
+                            validCount++;
+                        }
+                        if (validCount === checkCount) {
+                            callback(true, '');
+                        }
+                    });
+                });
+            }
+        function validateFinalStep() {
+            var departure_date = $('#departure_date').val();
+            var arrival_date = $('#arrival_date').val();
+            if (!departure_date || !arrival_date) {
+                showError('Заполните даты отправления и прибытия.');
+                return false;
+            }
+            var departure = new Date(departure_date);
+            var arrival = new Date(arrival_date);
+            if (arrival <= departure) {
+                showError('Некорректные даты прибытия и отправления.');
+                return false;
+            }
+            clearError();
+            return true;
+        }
     </script>
-
 </head>
 <header>
     {% include 'header.html' %}
 </header>
 <body>
     <div class="container">
-        <h2 class="h1">Создать поездку</h2>
-        <form id="trip-form" action="/create_trip" method="post">
+        <h2 id="create-trip-header" class="h1">Создать поездку</h2>
+        <div id="error-container" class="alert alert-danger" style="display:none;"></div>
+        {% if error %}
+          <div class="alert alert-danger my-3">{{ error }}</div>
+        {% endif %}
+        <form id="trip-form" method="POST" action="/create_trip">
             <div id="step-1">
                 <div class="form-group">
                     <label for="start_country">Страна отправления:</label>
@@ -75,13 +237,22 @@
                     <label for="finish_city">Город назначения:</label>
                     <input type="text" class="form-control" id="finish_city" name="finish_city" required>
                 </div>
-                <button type="button" class="btn btn-primary" onclick="nextStep(2)">Далее</button>
                 <button type="button" class="btn btn-custom" onclick="prevStep(2)">Назад</button>
+                <button id="next-button" type="button" class="btn btn-primary" onclick="nextStep(2)">Далее</button>
                 <div id="additional-fields-container">
-                    <button type="button" class="btn btn-primary" onclick="addAdditionalFields()">Добавить промежуточную точку</button>
-                </div>
+                    <button id="add-button" type="button" class="btn btn-primary" onclick="addAdditionalFields()">Добавить промежуточную точку</button>
+                    <button type="button" class="btn btn-delete" onclick="removeAdditionalFields(this)">Удалить промежуточную точку</button>
+                </div> 
+                <input type="hidden" name="point_countries" id="point_countries">
+                <input type="hidden" name="point_cities" id="point_cities">          
             </div>
             <div id="step-3" style="display:none;">
+                <h2 class="h1">Проверьте данные на карте:</h2>
+                <div id="map" style="width: 100%; height: 400px;"></div>   
+                <button type="button" class="btn btn-custom" onclick="prevStep(3)">Назад</button>            
+                <button type="button" class="btn btn-primary" onclick="nextStep(3)">Далее</button>
+            </div>
+            <div id="step-4" style="display:none;">
                 <div class="form-group">
                     <label for="departure_date">Дата отправления:</label>
                     <input type="date" class="form-control" id="departure_date" name="departure_date" required>
@@ -90,13 +261,125 @@
                     <label for="arrival_date">Дата прибытия:</label>
                     <input type="date" class="form-control" id="arrival_date" name="arrival_date" required>
                 </div>
-                <button type="submit" class="btn btn-primary">Создать поездку</button>
-                <button type="button" class="btn btn-custom" onclick="prevStep(3)">Назад</button>
+                <button type="button" class="btn btn-custom" onclick="prevStep(4)">Назад</button>
+                <button type="submit" class="btn btn-primary" onclick="return validateFinalStep()">Создать поездку</button>
             </div>
         </form>
     </div>
     <footer>
         {% include 'footer.html' %}
     </footer>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        var myMap;
+        ymaps.ready(function() {
+            myMap = new ymaps.Map("map", {
+                center: [55.76, 37.64],
+                zoom: 7
+            });
+    
+            $('#next-button').on('click', function() {
+                var start_country = $('#start_country').val();
+                var start_city = $('#start_city').val();
+                var finish_country = $('#finish_country').val();
+                var finish_city = $('#finish_city').val();
+                var point_countries = [];
+                var point_cities = [];
+                for (var i = 1; i <= 10; i++) {
+                    var country = $(`#point_country_${i}`).val();
+                    var city = $(`#point_city_${i}`).val();
+                    if (country && city) {
+                        point_countries.push(country);
+                        point_cities.push(city);
+                    }
+                }
+    
+                var formData = {
+                    start_country: start_country,
+                    start_city: start_city,
+                    finish_country: finish_country,
+                    finish_city: finish_city,
+                    point_countries: point_countries,
+                    point_cities: point_cities
+                };
+    
+                var geocodeAddress = function(address) {
+                    return $.getJSON('/geocode', { address: address });
+                };
+    
+                var startAddress = start_city + ', ' + start_country;
+                var finishAddress = finish_city + ', ' + finish_country;
+    
+                var geocodePromises = [
+                    geocodeAddress(startAddress),
+                    geocodeAddress(finishAddress)
+                ];
+    
+                point_countries.forEach(function(country, index) {
+                    var city = point_cities[index];
+                    if (country && city) {
+                        var pointAddress = city + ', ' + country;
+                        geocodePromises.push(geocodeAddress(pointAddress));
+                    }
+                });
+    
+                Promise.all(geocodePromises).then(function(results) {
+                    var startCoords = results[0].response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos.split(' ').map(Number).reverse();
+                    var finishCoords = results[1].response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos.split(' ').map(Number).reverse();
+    
+                    var pointCoords = results.slice(2).map(function(result) {
+                        return result.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos.split(' ').map(Number).reverse();
+                    });
+    
+                    initMap(startCoords, finishCoords, pointCoords);
+                }).catch(function(error) {
+                    console.log('Ошибка геокодирования:', error);
+                });
+            });
+        });
+    
+        function initMap(startCoords, finishCoords, pointCoords) {
+            myMap.geoObjects.removeAll();
+    
+            if (startCoords) {
+                var startPlacemark = new ymaps.Placemark(startCoords, {
+                    hintContent: 'Точка отправления',
+                    balloonContent: 'Точка отправления'
+                });
+                myMap.geoObjects.add(startPlacemark);
+                myMap.setCenter(startCoords);
+            }
+    
+            if (finishCoords) {
+                var finishPlacemark = new ymaps.Placemark(finishCoords, {
+                    hintContent: 'Точка назначения',
+                    balloonContent: 'Точка назначения'
+                });
+                myMap.geoObjects.add(finishPlacemark);
+            }
+    
+            if (pointCoords && pointCoords.length > 0) {
+                pointCoords.forEach(function(coords) {
+                    var pointPlacemark = new ymaps.Placemark(coords, {
+                        hintContent: 'Промежуточная точка',
+                        balloonContent: 'Промежуточная точка'
+                    });
+                    myMap.geoObjects.add(pointPlacemark);
+                });
+            }
+
+            if (startCoords && finishCoords) {
+                var routeLine = new ymaps.Polyline([startCoords, ...pointCoords, finishCoords], {}, {
+                    geodesic: true,
+                    strokeColor: '#FF0000',
+                    strokeWidth: 3
+                });
+                myMap.geoObjects.add(routeLine);
+                // При необходимости можно сделать автоподгон размера карты к маршруту
+                var bounds = [startCoords, finishCoords].concat(pointCoords);
+                myMap.setBounds(bounds, { checkZoomRange: true });
+            }
+        }
+    </script>
 </body>
 </html>

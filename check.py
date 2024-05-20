@@ -62,3 +62,28 @@ def password_check(password):
     if password.count(' ') != 0:
         return False
     return True
+
+
+def city_point_check(city):
+    if not isinstance(city, str):
+        return False
+    with open('cities.csv', 'r', encoding='utf-8') as csvfile:
+        csvreader = csv.reader(csvfile)
+        for row in csvreader:
+            name = ''.join(i for i in row)
+            name = name.replace('\ufeff', '')
+            if city == name:
+                return True
+    return False
+
+def country_point_check(country):
+    if not isinstance(country, str):
+        return False
+    with open('countries_data.csv', 'r', encoding='utf-8') as csvfile:
+        csvreader = csv.reader(csvfile)
+        for row in csvreader:
+            name = ''.join(i for i in row)
+            name = name.replace('\ufeff', '')
+            if country == name:
+                return True
+    return False
