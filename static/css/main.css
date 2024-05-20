@@ -116,9 +116,16 @@ footer {
 
 .trip-table th,
 .trip-table td {
-  padding: 8px;
-  text-align: left;
+  padding: 10px;
   border-bottom: 1px solid #ddd;
+}
+
+.trip-table tr {
+  line-height: 2.0;
+}
+
+.trip-table tbody tr {
+  line-height: 1.0;
 }
 
 .trip-table thead {
@@ -261,8 +268,6 @@ footer {
     }
 }
 
-/* Подключение шрифта Righteous' */
-/* latin-ext */
 @font-face {
   font-family: 'Righteous';
   font-style: normal;
@@ -271,7 +276,7 @@ footer {
   src: url(/static/fonts/Righteous1.woff2) format('woff2');
   unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
-/* latin */
+
 @font-face {
   font-family: 'Righteous';
   font-style: normal;
@@ -294,4 +299,61 @@ footer {
   background-color:  #353535; 
   border-color: #353535;
   color: #ffffff;
+}
+
+.btn-delete {
+  margin-top: 1rem !important;
+  margin-bottom: 10px !important;
+  background-color: #dc3545; 
+  border-color: #dc3545; 
+  color: #fff;
+}
+
+
+.btn-delete:hover {
+  background-color:  #771d26; 
+  border-color: #771d26;
+  color: #fff;
+}
+
+.buy1 {
+  margin-top: 10px !important;
+  margin-bottom: 2px !important;
+  background-color: #007bffd0;
+  border-color: #007bffd0;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 10px;
+}
+
+.buy1:hover {
+  background-color:  #094ba1; 
+  border-color: #094ba1;
+  color: #ffffff;
+}
+
+.buy2 {
+  margin-top: 10px !important;
+  margin-bottom: 2px !important;
+  background-color: #0262c9d0;
+  border-color: #0262c9d0;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 10px;
+  
+}
+
+.buy2:hover {
+  background-color:  #094ba1; 
+  border-color: #094ba1;
+  color: #ffffff;
+}
+
+.additional-fields {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-top: 20px;
+  margin-bottom: 15px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
 }

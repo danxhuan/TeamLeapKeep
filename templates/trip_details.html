@@ -6,6 +6,15 @@
     <title>История поездок</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <style>
+        .trip-table tbody tr {
+            line-height: 2.0;
+        }
+
+        .trip-table td {
+            padding: 10px 5px;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -18,8 +27,8 @@
                 <thead>
                     <tr>
                         <th>Страна отправления</th>
-                        <th>Город отправления</th>
                         <th>Страна назначения</th>
+                        <th>Город отправления</th>
                         <th>Город назначения</th>
                         <th>Дата отправления <span class="calendar-icon"></span></th>
                         <th>Дата прибытия <span class="calendar-icon"></span></th>
@@ -32,11 +41,11 @@
                     {% for trip in trips %}
                     <tr>
                         <td>{{ trip.start_country }}</td>
-                        <td>{{ trip.start_city }}</td>
                         <td>{{ trip.finish_country }}</td>
+                        <td>{{ trip.start_city }}</td>
                         <td>{{ trip.finish_city }}</td>
-                        <td>{{ trip.departure_date.strftime('%Y-%m-%d') }}</td>
-                        <td>{{ trip.arrival_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ trip.departure_date }}</td>
+                        <td>{{ trip.arrival_date }}</td>
                         <td>{{ trip.stay_time }} дней</td>
                         <td>
                             <ul>
@@ -48,16 +57,16 @@
                         <td>
                             <form action="https://www.booking.com/searchresults.ru.html" method="get" target="_blank">
                                 <input type="hidden" name="ss" value="{{ trip.finish_city }}">
-                                <input type="hidden" name="depart_date" value="{{ trip.departure_date.strftime('%Y-%m-%d') }}">
-                                <input type="hidden" name="return_date" value="{{ trip.arrival_date.strftime('%Y-%m-%d') }}">
-                                <button type="submit">Забронировать отели</button>
+                                <input type="hidden" name="depart_date" value="{{ trip.departure_date }}">
+                                <input type="hidden" name="return_date" value="{{ trip.arrival_date }}">
+                                <button class="btn buy1" type="submit">Бронь отеля</button>
                             </form>
                             <form action="https://www.aviasales.ru/search" method="get" target="_blank" style="margin-top: 10px;">
-                                <input type="hidden" name="origin" value="{{ iata_codes[trip.start_city] }}">
-                                <input type="hidden" name="destination" value="{{ iata_codes[trip.finish_city] }}">
-                                <input type="hidden" name="depart_date" value="{{ trip.departure_date.strftime('%Y-%m-%d') }}">
-                                <input type="hidden" name="return_date" value="{{ trip.arrival_date.strftime('%Y-%m-%d') }}">
-                                <button type="submit">Купить авиабилеты</button>
+                                <input type="hidden" name="origin" value="{{ trip.start_city }}">
+                                <input type="hidden" name="destination" value="{{ trip.finish_city }}">
+                                <input type="hidden" name="depart_date" value="{{ trip.departure_date }}">
+                                <input type="hidden" name="return_date" value="{{ trip.arrival_date }}">
+                                <button class="btn buy2" type="submit">Купить билет</button>
                             </form>
                         </td>
                     </tr>
