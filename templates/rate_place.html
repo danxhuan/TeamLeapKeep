@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Оценить Город</title>
+    <title>Оценить место</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
@@ -12,13 +12,13 @@
       {% include 'header.html' %}
     </header>
     <div class="container_auth">
-        <h1 class="h1">Оценить Город</h1>
+        <h1 class="h1">Оценить место</h1>
         {% if error %}
           <div class="alert alert-danger my-3">{{ error }}</div>
         {% endif %}
         <form action="{{ url_for('rate_place') }}" method="post" class="rate-place-form">
             <div class="form-group">
-                <label for="place_name">Название Города:</label>
+                <label for="place_name">Название места:</label>
                 <input type="text" id="place_name" name="place_name" class="form-control" required>
             </div>
             <div class="form-group">
