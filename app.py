@@ -246,19 +246,16 @@ def rate_place():
         if not country_check(place_name) and not city_check(place_name):
             error = 'Название пункта не соответствует требованиям.'
         if not error:
-            existing_rating = Rating.query.filter_by(
-                place_name=place_name, user_id=user_id).first()
+            existing_rating = Rating.query.filter_by(place_name=place_name, user_id=user_id).first()
             if existing_rating:
-                existing_rating.rating = round(
-                    (int(user_rating) + existing_rating.rating) / 2, 2)
+                existing_rating.rating = round((int(user_rating) + existing_rating.rating) / 2, 2)
                 if comment_content:
                     new_comment = Comment(
                         content=comment_content, rating_id=existing_rating.id,
                         name='guest' if anonymous else username, user_id=user_id if not anonymous else None)
                     db.session.add(new_comment)
             else:
-                new_rating = Rating(place_name=place_name,
-                                    rating=user_rating, user_id=user_id)
+                new_rating = Rating(place_name=place_name, rating=user_rating, user_id=user_id)
                 db.session.add(new_rating)
                 db.session.commit()
                 if comment_content:
@@ -270,13 +267,13 @@ def rate_place():
             return redirect(url_for('places'))
     return render_template('rate_place.html', error=error)
 
-
 @app.route('/places', methods=['GET', 'POST'])
 def places():
-    if 'user_id' not in session or session['user_id'] is None or session is None:
+    if 'user_id' not in session or session['user_id'] is None:
         return redirect(url_for('login'))
-    places = Rating.query.all()
+    places = Rating.query.options(db.joinedload(Rating.comments)).all()
     return render_template('places.html', places=places)
+
 
 
 if __name__ == '__main__':

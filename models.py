@@ -70,11 +70,13 @@ class Rating(db.Model):
     place_name = db.Column(db.String(100), nullable=False)
     rating = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    comments = db.relationship('Comment', backref='rating', lazy=True)
+
 
 
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.String(300), nullable=True)
+    content = db.Column(db.String(300), nullable=False)
     name = db.Column(db.String(50), nullable=False, default='anon')
     rating_id = db.Column(db.Integer, db.ForeignKey(
         'rating.id'), nullable=False)
