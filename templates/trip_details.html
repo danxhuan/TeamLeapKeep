@@ -27,8 +27,8 @@
                 <thead>
                     <tr>
                         <th>Страна отправления</th>
-                        <th>Страна назначения</th>
                         <th>Город отправления</th>
+                        <th>Страна назначения</th>
                         <th>Город назначения</th>
                         <th>Дата отправления <span class="calendar-icon"></span></th>
                         <th>Дата прибытия <span class="calendar-icon"></span></th>
@@ -41,8 +41,8 @@
                     {% for trip in trips %}
                     <tr>
                         <td>{{ trip.start_country }}</td>
-                        <td>{{ trip.finish_country }}</td>
                         <td>{{ trip.start_city }}</td>
+                        <td>{{ trip.finish_country }}</td>
                         <td>{{ trip.finish_city }}</td>
                         <td>{{ trip.departure_date }}</td>
                         <td>{{ trip.arrival_date }}</td>
